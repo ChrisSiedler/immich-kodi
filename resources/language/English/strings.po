@@ -25,7 +25,7 @@ msgid "Albums"
 msgstr ""
 
 msgctxt "#30004"
-msgid ""
+msgid "Favorites"
 msgstr ""
 
 msgctxt "#30005"

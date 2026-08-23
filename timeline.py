@@ -14,8 +14,7 @@ from utils import (
 HANDLE = int(sys.argv[1])
 
 #--------------------------------------       
-def timeline(video):
-    video = "1" if video else ""
+def list_timeline():
 
     buckets = IMMICH.getTimeBuckets()
     
@@ -51,7 +50,7 @@ def timeline(video):
 
 
 #--------------------------------------
-def time(id, video):
+def time(id):
    
     startdate = datetime.datetime.strptime(id, '%Y-%m-%d').replace(tzinfo=datetime.timezone.utc)
     enddate = next_month(startdate)

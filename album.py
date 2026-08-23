@@ -4,15 +4,12 @@ import xbmcgui
 import xbmcplugin
 
 from immich import IMMICH, KodiContent
-
 HANDLE = int(sys.argv[1])
-
 
 from utils import (
     get_url
 )
 
-#--------------------------------------       
 def list_albums():
     albums = IMMICH.getAllAlbums()
     
@@ -50,7 +47,13 @@ def list_albums():
     xbmcplugin.addDirectoryItems(HANDLE, items, len(items))      
     xbmcplugin.endOfDirectory(HANDLE, cacheToDisc=False)
      
-     
+#--------------------------------------       
+def list_favorites():
+
+    favorites = IMMICH.getFavoriteAssets()
+    KodiContent(HANDLE, favorites["assets"], "album")    
+   
+         
 #--------------------------------------       
 def album(id):
     album = IMMICH.get_album(id)

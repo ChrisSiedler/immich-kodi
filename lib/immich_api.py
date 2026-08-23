@@ -6,10 +6,17 @@ import sys
 from lib.models import Album, ItemAsset, TimelineBucket
 
 class Immich_API():
-    def __init__(self, RAW_SERVER_URL, APIKey):
+    def __init__(self, RAW_SERVER_URL, APIKey, favonly=False):
         self.url    = RAW_SERVER_URL
         self.APIKey = APIKey
-        self.global_filter = {}
+        
+        self.global_filter = {
+            "visibility": "timeline",
+            "withExif": True
+            }
+
+        if favonly:
+            self.global_filter['isFavorite'] = True
 
     #---------------------------------------------------------
     @staticmethod
@@ -80,40 +87,51 @@ class Immich_API():
             return f"{self.url}/api/assets/{uuid}/video/playback|x-api-key={self.APIKey}"
         else:
             raise ValueError
+            
     #---------------------------------------------------------
     def get_album(self, id):
-   
-        resp = self._api_call("POST", "search/metadata", {
-            "albumIds": [id],
-            "visibility": "timeline",
-            "withExif": True
-            })
+
+        myfilter = self.global_filter.copy()
+        myfilter.update({
+           "albumIds": [id],
+        })
+           
+        resp = self._api_call("POST", "search/metadata", myfilter)
             
-        data = {"assets": [ItemAsset.from_api_response(d) for d in resp["assets"]["items"]]}
-        return data
+        return {"assets": [ItemAsset.from_api_response(d) for d in resp["assets"]["items"]]}
 
     #---------------------------------------------------------
     def getTimeBucket(self, startdate, enddate):
-        
-        resp = self._api_call("POST", "search/metadata", {
-            "visibility": "timeline",
-            "withExif": True,
+
+        myfilter = self.global_filter.copy()
+        myfilter.update({
             "takenAfter": startdate.isoformat(), 
             "takenBefore": enddate.isoformat()
-            })
+        })
         
-        data = {"assets": [ItemAsset.from_api_response(d) for d in resp["assets"]["items"]]}
-        return data
+        resp = self._api_call("POST", "search/metadata", myfilter)
+        
+        return {"assets": [ItemAsset.from_api_response(d) for d in resp["assets"]["items"]]}
+    #---------------------------------------------------------
+    def getFavoriteAssets(self):
 
+        myfilter = self.global_filter.copy()
+        myfilter.update({
+            "isFavorite": True
+        })
+        
+        resp = self._api_call("POST", "search/metadata", myfilter)
+        
+        return {"assets": [ItemAsset.from_api_response(d) for d in resp["assets"]["items"]]}
+        
     #---------------------------------------------------------
     def get_random_Asset(self, filter={"size": 1}):    
         # Just get one random picture
 
-        d = self.global_filter.copy()
-        d.update(filter)
+        myfilter = self.global_filter.copy()
+        myfilter.update(filter)
 
-        response = self._api_call("POST", "search/random", d)
-        return response
+        return self._api_call("POST", "search/random", myfilter)
         
     #---------------------------------------------------------
     def getAssetInfo(self, assetId):
@@ -125,8 +143,7 @@ class Immich_API():
 	    
 	    blacklist = ['Bilderrahmen']
 	    	    
-	    data = [x for x in response if x['albumName'] not in blacklist]
-	    return data
+	    return [x for x in response if x['albumName'] not in blacklist]
 	    
             
 # ======================================================================================

@@ -9,7 +9,8 @@ addon = xbmcaddon.Addon()
 
 IMMICH = Immich_API(
 	addon.getSettingString("immich_url"),
-	addon.getSettingString("api_key")
+	addon.getSettingString("api_key"),
+	favonly = addon.getSettingBool("fav_only")
 	)
 
 #--------------------------------------------------------------------
@@ -28,7 +29,6 @@ def KodiContent(HANDLE, assets, t="timeline"):
 
         # item.setLabel(asset.exifInfo.description) # Titel überschreben
         item.setLabel2(asset.exifInfo.description)
-
 
             
         if asset.type == "VIDEO":
@@ -69,6 +69,14 @@ def KodiContent(HANDLE, assets, t="timeline"):
                 AssetSize = "video"
             else:
                 AssetSize = "preview"
+        
+        
+        # RaspberryPI workarounds:       
+        if asset.type == "IMAGE" and AssetSize == "original" and asset.originalMimeType == "image/heic":
+                AssetSize = "fullsize"
+
+        if asset.type == "VIDEO" and AssetSize == "original" and asset.originalMimeType == "video/webm":
+                AssetSize = "video"            
             
         items.append((
             IMMICH.getAssetUrl(asset.id, size=AssetSize), 
